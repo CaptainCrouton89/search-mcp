@@ -4,6 +4,8 @@ import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import { config } from "dotenv";
 import { z } from "zod";
+import { mkdir, writeFile } from "fs/promises";
+import { join } from "path";
 
 config({ path: ".env.local" });
 
@@ -83,6 +85,20 @@ server.tool(
         citations.forEach((citation: string, index: number) => {
           result += `${index + 1}. ${citation}\n`;
         });
+      }
+
+      // Save to /tmp directory
+      try {
+        const tmpDir = join(process.cwd(), "tmp");
+        await mkdir(tmpDir, { recursive: true });
+        
+        const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
+        const filename = `perplexity-${timestamp}.md`;
+        const filepath = join(tmpDir, filename);
+        
+        await writeFile(filepath, result, "utf8");
+      } catch (saveError) {
+        console.error("Failed to save response to file:", saveError);
       }
 
       return {
