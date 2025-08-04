@@ -1,196 +1,85 @@
-# MCP Server Boilerplate
+# Research MCP Server
 
-A starter template for building MCP (Model Context Protocol) servers. This boilerplate provides a clean foundation for creating your own MCP server that can integrate with Claude, Cursor, or other MCP-compatible AI assistants.
-
-## Purpose
-
-This boilerplate helps you quickly start building:
-
-- Custom tools for AI assistants
-- Resource providers for dynamic content
-- Prompt templates for common operations
-- Integration points for external APIs and services
+A comprehensive MCP (Model Context Protocol) server that provides powerful research capabilities through multiple academic and web sources.
 
 ## Features
 
-- Simple "hello-world" tool example
-- TypeScript support with proper type definitions
-- Easy installation scripts for different MCP clients
-- Clean project structure ready for customization
+- **Perplexity Integration**: Web search and deep research capabilities
+- **Google Scholar**: Academic paper search and citation analysis  
+- **ArXiv**: Scientific paper search and retrieval
+- **OpenAlex**: Academic database search with rich metadata
+- **GitHub Integration**: Repository search and code analysis
+- **Markdown Conversion**: Extract and convert web content to markdown
 
-## How It Works
-
-This MCP server template provides:
-
-1. A basic server setup using the MCP SDK
-2. Example tool implementation
-3. Build and installation scripts
-4. TypeScript configuration for development
-
-The included example demonstrates how to create a simple tool that takes a name parameter and returns a greeting.
-
-## Getting Started
+## Installation
 
 ```bash
-# Clone the boilerplate
-git clone <your-repo-url>
-cd mcp-server-boilerplate
-
-# Install dependencies
 pnpm install
-
-# Build the project
 pnpm run build
-
-# Start the server
-pnpm start
 ```
 
-## Installation Scripts
+## Quick Start
 
-This boilerplate includes convenient installation scripts for different MCP clients:
-
+Install to all MCP clients:
 ```bash
-# For Claude Desktop
-pnpm run install-desktop
-
-# For Cursor
-pnpm run install-cursor
-
-# For Claude Code
-pnpm run install-code
-
-# Generic installation
 pnpm run install-server
 ```
 
-These scripts will build the project and automatically update the appropriate configuration files.
-
-## Usage with Claude Desktop
-
-The installation script will automatically add the configuration, but you can also manually add it to your `claude_desktop_config.json` file:
-
-```json
-{
-  "mcpServers": {
-    "your-server-name": {
-      "command": "node",
-      "args": ["/path/to/your/dist/index.js"]
-    }
-  }
-}
+Or install to specific clients:
+```bash
+pnpm run install-desktop    # Claude Desktop
+pnpm run install-cursor     # Cursor IDE
+pnpm run install-code       # Claude Code
 ```
 
-Then restart Claude Desktop to connect to the server.
+## Configuration
 
-## Customizing Your Server
+Create a `.env.local` file with your API keys:
 
-### Adding Tools
-
-Tools are functions that the AI assistant can call. Here's the basic structure:
-
-```typescript
-server.tool(
-  "tool-name",
-  "Description of what the tool does",
-  {
-    // Zod schema for parameters
-    param1: z.string().describe("Description of parameter"),
-    param2: z.number().optional().describe("Optional parameter"),
-  },
-  async ({ param1, param2 }) => {
-    // Your tool logic here
-    return {
-      content: [
-        {
-          type: "text",
-          text: "Your response",
-        },
-      ],
-    };
-  }
-);
+```env
+PERPLEXITY_API_KEY=your_perplexity_key
+GITHUB_TOKEN=your_github_token
+# Other API keys as needed
 ```
 
-### Adding Resources
+## Available Tools
 
-Resources provide dynamic content that the AI can access:
+### Search & Research
+- `ask-perplexity` - Web search with AI-powered answers
+- `google-scholar-search` - Academic paper search
+- `arxiv-search` - Scientific paper search
+- `openalex-search` - Comprehensive academic database search
 
-```typescript
-server.resource(
-  "resource://example/{id}",
-  "Description of the resource",
-  async (uri) => {
-    // Extract parameters from URI
-    const id = uri.path.split("/").pop();
+### Content Processing  
+- `get-markdown` - Convert web pages to clean markdown
+- `github-search` - Search GitHub repositories and code
 
-    return {
-      contents: [
-        {
-          uri,
-          mimeType: "text/plain",
-          text: `Content for ${id}`,
-        },
-      ],
-    };
-  }
-);
-```
-
-### Adding Prompts
-
-Prompts are reusable templates:
-
-```typescript
-server.prompt(
-  "prompt-name",
-  "Description of the prompt",
-  {
-    // Parameters for the prompt
-    topic: z.string().describe("The topic to discuss"),
-  },
-  async ({ topic }) => {
-    return {
-      description: `A prompt about ${topic}`,
-      messages: [
-        {
-          role: "user",
-          content: {
-            type: "text",
-            text: `Please help me with ${topic}`,
-          },
-        },
-      ],
-    };
-  }
-);
-```
-
-## Project Structure
-
-```
-├── src/
-│   └── index.ts          # Main server implementation
-├── scripts/              # Installation and utility scripts
-├── dist/                 # Compiled JavaScript (generated)
-├── package.json          # Project configuration
-├── tsconfig.json         # TypeScript configuration
-└── README.md            # This file
-```
+### Advanced Features
+- Deep research mode for comprehensive analysis
+- Citation tracking and paper relationships
+- Metadata extraction from academic sources
+- Content summarization and extraction
 
 ## Development
 
-1. Make changes to `src/index.ts`
-2. Run `pnpm run build` to compile
-3. Test your server with `pnpm start`
-4. Use the installation scripts to update your MCP client configuration
+Start the server directly:
+```bash
+pnpm start
+```
 
-## Next Steps
+Build and watch for changes:
+```bash
+pnpm run build
+pnpm start
+```
 
-1. Update `package.json` with your project details
-2. Customize the server name and tools in `src/index.ts`
-3. Add your own tools, resources, and prompts
-4. Integrate with external APIs or databases as needed
+## Architecture
+
+Built on the Model Context Protocol (MCP) with:
+- TypeScript for type safety
+- Zod for parameter validation  
+- Modular tool architecture
+- Support for multiple MCP clients
 
 ## License
 
