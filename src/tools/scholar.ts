@@ -1,7 +1,7 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
-import { z } from "zod";
 import { mkdir, writeFile } from "fs/promises";
 import { join } from "path";
+import { z } from "zod";
 
 export function registerScholarTools(server: McpServer) {
   server.tool(
@@ -31,10 +31,10 @@ export function registerScholarTools(server: McpServer) {
         .describe("Search for papers that cite this specific paper ID"),
     },
     async ({ query, yearStart, yearEnd, numResults = 10, cites }) => {
-      const apiKey = process.env.SERPAPI_KEY;
+      const apiKey = process.env.SERP_API_KEY;
 
       if (!apiKey) {
-        throw new Error("SERPAPI_KEY not found in environment variables");
+        throw new Error("SERP_API_KEY not found in environment variables");
       }
 
       const params = new URLSearchParams({
