@@ -85,10 +85,10 @@ function buildSearchQuery(baseQuery: string, filters: Record<string, string | un
 export function registerGitHubTools(server: McpServer) {
   server.tool(
     "github-search-repositories",
-    "Search GitHub repositories using GraphQL API",
+    "Search GitHub repositories using GraphQL API. Use simple, focused search terms - avoid combining too many keywords as GitHub uses AND logic. Use filters instead of including language names in the query text.",
     {
-      query: z.string().describe("Search query for repositories"),
-      language: z.string().optional().describe("Filter by programming language"),
+      query: z.string().describe("Simple search query for repositories. Use 2-3 core keywords max (e.g., 'latex converter' not 'latex markdown converter javascript typescript'). GitHub uses AND logic - too many terms will return zero results."),
+      language: z.string().optional().describe("Filter by programming language (use this instead of including language names in query text)"),
       stars: z.string().optional().describe("Filter by star count (e.g., '>100', '10..50')"),
       created: z.string().optional().describe("Filter by creation date (e.g., '>2020-01-01')"),
       pushed: z.string().optional().describe("Filter by last push date"),
@@ -229,10 +229,10 @@ export function registerGitHubTools(server: McpServer) {
 
   server.tool(
     "github-search-code",
-    "Search code across GitHub repositories using GraphQL API",
+    "Search code across GitHub repositories using GraphQL API. Use simple, focused search terms - avoid combining too many keywords as GitHub uses AND logic. Use filters instead of including language names in the query text.",
     {
-      query: z.string().describe("Code search query"),
-      language: z.string().optional().describe("Filter by programming language"),
+      query: z.string().describe("Simple code search query. Use 2-3 core keywords max. GitHub uses AND logic - too many terms will return zero results."),
+      language: z.string().optional().describe("Filter by programming language (use this instead of including language names in query text)"),
       repo: z.string().optional().describe("Filter by specific repository (owner/name)"),
       path: z.string().optional().describe("Filter by file path"),
       extension: z.string().optional().describe("Filter by file extension"),
@@ -334,9 +334,9 @@ export function registerGitHubTools(server: McpServer) {
 
   server.tool(
     "github-search-issues",
-    "Search GitHub issues and pull requests using GraphQL API",
+    "Search GitHub issues and pull requests using GraphQL API. Use simple, focused search terms - avoid combining too many keywords as GitHub uses AND logic.",
     {
-      query: z.string().describe("Search query for issues/PRs"),
+      query: z.string().describe("Simple search query for issues/PRs. Use 2-3 core keywords max. GitHub uses AND logic - too many terms will return zero results."),
       type: z.enum(["issue", "pr", "both"]).optional().describe("Filter by type (default: both)"),
       state: z.enum(["open", "closed", "merged", "all"]).optional().describe("Filter by state (default: all)"),
       repo: z.string().optional().describe("Filter by specific repository (owner/name)"),
@@ -546,11 +546,11 @@ export function registerGitHubTools(server: McpServer) {
 
   server.tool(
     "github-search-users",
-    "Search GitHub users using GraphQL API",
+    "Search GitHub users using GraphQL API. Use simple, focused search terms - avoid combining too many keywords as GitHub uses AND logic.",
     {
-      query: z.string().describe("Search query for users"),
+      query: z.string().describe("Simple search query for users. Use 2-3 core keywords max. GitHub uses AND logic - too many terms will return zero results."),
       location: z.string().optional().describe("Filter by location"),
-      language: z.string().optional().describe("Filter by primary language"),
+      language: z.string().optional().describe("Filter by primary language (use this instead of including language names in query text)"),
       followers: z.string().optional().describe("Filter by follower count (e.g., '>100')"),
       repos: z.string().optional().describe("Filter by repository count (e.g., '>10')"),
       first: z.number().optional().describe("Number of results to return (default 10, max 100)"),

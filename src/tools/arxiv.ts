@@ -1,6 +1,6 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { z } from "zod";
-import { mkdir, writeFile } from "fs/promises";
+import { mkdir, writeFile, readFile, readdir } from "fs/promises";
 import { join } from "path";
 
 // Interface for parsed arXiv entry
@@ -202,6 +202,95 @@ async function saveToTmpDirectory(content: string, filename: string): Promise<st
   }
 }
 
+async function convertLatexToMarkdownWithPandoc(texFilePath: string, outputPath: string): Promise<void> {
+  try {
+    const { exec } = await import('child_process');
+    const { promisify } = await import('util');
+    const execAsync = promisify(exec);
+    
+    // Use pandoc to convert LaTeX to Markdown
+    await execAsync(`pandoc "${texFilePath}" -f latex -t markdown -o "${outputPath}"`);
+  } catch (error) {
+    console.error("Failed to convert LaTeX to Markdown with pandoc:", error);
+    throw error;
+  }
+}
+
+async function findMainTexFile(extractDir: string): Promise<string | null> {
+  try {
+    const files = await readdir(extractDir);
+    
+    // Look for main.tex first
+    if (files.includes('main.tex')) {
+      return join(extractDir, 'main.tex');
+    }
+    
+    // Look for any .tex file that might be the main file
+    const texFiles = files.filter(f => f.endsWith('.tex'));
+    if (texFiles.length > 0) {
+      return join(extractDir, texFiles[0]);
+    }
+    
+    return null;
+  } catch (error) {
+    return null;
+  }
+}
+
+async function downloadLatexSource(arxivId: string): Promise<{extractDir: string, markdownPath: string}> {
+  try {
+    const tmpDir = join(process.cwd(), "tmp");
+    await mkdir(tmpDir, { recursive: true });
+
+    const timestamp = new Date().toISOString().replace(/[:.]/g, "-");
+    const cleanId = arxivId.replace(/[\/.]/g, '-');
+    const extractDir = join(tmpDir, `arxiv-${cleanId}-${timestamp}`);
+    
+    // Download the LaTeX source as tar.gz
+    const sourceUrl = `https://arxiv.org/src/${arxivId}`;
+    const response = await fetch(sourceUrl);
+    
+    if (!response.ok) {
+      throw new Error(`Failed to download LaTeX source: ${response.status} ${response.statusText}`);
+    }
+
+    const arrayBuffer = await response.arrayBuffer();
+    const buffer = Buffer.from(arrayBuffer);
+    
+    // Save the tar.gz file temporarily
+    const tarPath = join(tmpDir, `arxiv-${cleanId}-${timestamp}.tar.gz`);
+    await writeFile(tarPath, buffer);
+    
+    // Create extraction directory and extract
+    await mkdir(extractDir, { recursive: true });
+    
+    // Use node's child_process to run tar command
+    const { exec } = await import('child_process');
+    const { promisify } = await import('util');
+    const execAsync = promisify(exec);
+    
+    await execAsync(`tar -xzf "${tarPath}" -C "${extractDir}"`);
+    
+    // Clean up the tar.gz file
+    const { unlink } = await import('fs/promises');
+    await unlink(tarPath);
+    
+    // Find and convert main tex file to markdown
+    const mainTexPath = await findMainTexFile(extractDir);
+    let markdownPath = '';
+    
+    if (mainTexPath) {
+      markdownPath = join(extractDir, 'paper.md');
+      await convertLatexToMarkdownWithPandoc(mainTexPath, markdownPath);
+    }
+    
+    return { extractDir, markdownPath };
+  } catch (error) {
+    console.error("Failed to download LaTeX source:", error);
+    throw error;
+  }
+}
+
 async function callArxivAPI(params: URLSearchParams): Promise<ArxivResponse> {
   const url = `http://export.arxiv.org/api/query?${params.toString()}`;
   
@@ -300,11 +389,12 @@ export function registerArxivTools(server: McpServer) {
 
   server.tool(
     "arxiv-get-paper",
-    "Get detailed information about a specific arXiv paper by ID",
+    "Get detailed information about a specific arXiv paper by ID and download the LaTeX source",
     {
       arxivId: z.string().describe("arXiv paper ID (e.g., '1706.03762', 'cs.AI/0001001', or with version like '1706.03762v1')"),
+      includeContent: z.boolean().optional().describe("Whether to include the paper's markdown content in the response (default: true)"),
     },
-    async ({ arxivId }) => {
+    async ({ arxivId, includeContent = true }) => {
       try {
         // Clean up the arxiv ID - remove any URL prefix if present
         const cleanId = arxivId.replace(/^(https?:\/\/)?arxiv\.org\/(abs\/)?/, '');
@@ -319,14 +409,47 @@ export function registerArxivTools(server: McpServer) {
           throw new Error(`No paper found with ID: ${cleanId}`);
         }
 
-        const formattedResults = formatArxivResults(response, cleanId, "Paper Lookup");
-        const filepath = await saveToTmpDirectory(formattedResults, `paper-${cleanId.replace(/[\/\.]/g, '-')}`);
+        const paper = response.entries[0];
+        
+        // Download and extract the LaTeX source
+        const { extractDir, markdownPath } = await downloadLatexSource(cleanId);
+
+        let resultText = `Successfully downloaded arXiv paper ${cleanId}\n\nLaTeX source extracted to: ${extractDir}`;
+        
+        if (markdownPath) {
+          resultText += `\nMarkdown conversion saved to: ${markdownPath}`;
+        }
+        
+        resultText += `\n\nPaper details:\n- Title: ${paper.title}\n- Authors: ${paper.authors.join(', ')}\n- Abstract: ${paper.summary}`;
+
+        // Add links
+        resultText += `\n\nLinks:\n- [Abstract](${paper.links.abstract})\n- [PDF](${paper.links.pdf})`;
+        if (paper.links.doi) {
+          resultText += `\n- [DOI](${paper.links.doi})`;
+        }
+
+        // Include paper content if requested and available
+        if (includeContent && markdownPath) {
+          try {
+            let paperContent = await readFile(markdownPath, 'utf8');
+            
+            // Check if content is longer than 20,000 characters
+            if (paperContent.length > 20000) {
+              paperContent = paperContent.substring(0, 20000);
+              resultText += `\n\n## Paper Content (Truncated)\n\n**Note: Content was truncated as it exceeded 20,000 characters. Full content is available in the saved markdown file.**\n\n${paperContent}`;
+            } else {
+              resultText += `\n\n## Paper Content\n\n${paperContent}`;
+            }
+          } catch (error) {
+            resultText += `\n\n**Note: Could not read paper content from markdown file: ${error instanceof Error ? error.message : String(error)}**`;
+          }
+        }
 
         return {
           content: [
             {
               type: "text",
-              text: `Saved to: ${filepath}\n\n${formattedResults}`,
+              text: resultText,
             },
           ],
         };

@@ -5,3 +5,4 @@ dist
 .cursor-updates
 .env.local
 .mcp.json
+tmp/
