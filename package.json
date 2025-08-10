@@ -1,6 +1,6 @@
 {
   "name": "@r-mcp/search",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "A starter template for search tools",
   "main": "dist/index.js",
   "type": "module",
