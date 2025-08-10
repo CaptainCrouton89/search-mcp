@@ -1,11 +1,11 @@
 {
-  "name": "@r-mcp/mcp-search",
-  "version": "1.0.0",
+  "name": "@r-mcp/search",
+  "version": "1.0.1",
   "description": "A starter template for search tools",
   "main": "dist/index.js",
   "type": "module",
   "bin": {
-    "mcp-search": "./dist/index.js"
+    "search": "./dist/index.js"
   },
   "scripts": {
     "build": "tsc && chmod 755 dist/index.js",
