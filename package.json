@@ -1,5 +1,5 @@
 {
-  "name": "research",
+  "name": "@silasrhyneer/mcp-search",
   "version": "1.0.0",
   "description": "A MCP (Model Context Protocol) server for Perplexity",
   "main": "dist/index.js",
