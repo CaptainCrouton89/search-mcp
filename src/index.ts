@@ -9,6 +9,7 @@ import { registerMarkdownTools } from "./tools/markdown.js";
 import { registerGitHubTools } from "./tools/github.js";
 import { registerArxivTools } from "./tools/arxiv.js";
 import { registerOpenAlexTools } from "./tools/openalex.js";
+import { registerResearchStrategyTools } from "./tools/research-strategy.js";
 
 config({ path: ".env.local" });
 
@@ -24,6 +25,7 @@ registerMarkdownTools(server);
 registerGitHubTools(server);
 registerArxivTools(server);
 registerOpenAlexTools(server);
+registerResearchStrategyTools(server);
 
 async function main() {
   try {
