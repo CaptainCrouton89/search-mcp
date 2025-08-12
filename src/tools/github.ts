@@ -176,12 +176,7 @@ export function registerGitHubTools(server: McpServer) {
             if (repo.licenseInfo) {
               result += `**License:** ${repo.licenseInfo.name} (${repo.licenseInfo.key})\n`;
             }
-            result += `**Created:** ${new Date(repo.createdAt).toLocaleDateString()}\n`;
             result += `**Last Updated:** ${new Date(repo.updatedAt).toLocaleDateString()}\n`;
-            if (repo.pushedAt) {
-              result += `**Last Push:** ${new Date(repo.pushedAt).toLocaleDateString()}\n`;
-            }
-            result += `**Owner:** ${repo.owner.login}\n`;
             
             const flags = [];
             if (repo.isArchived) flags.push("Archived");
@@ -288,8 +283,7 @@ export function registerGitHubTools(server: McpServer) {
             result += `## ${index + 1}. ${match.repository.full_name}\n`;
             result += `**File:** ${match.path}\n`;
             result += `**Repository URL:** ${match.repository.html_url}\n`;
-            result += `**File URL:** ${match.html_url}\n`;
-            result += `**Owner:** ${match.repository.owner.login}\n\n`;
+            result += `**File URL:** ${match.html_url}\n\n`;
 
             if (match.text_matches && match.text_matches.length > 0) {
               result += "**Code Snippets:**\n";
@@ -483,7 +477,6 @@ export function registerGitHubTools(server: McpServer) {
               result += `**Assignees:** ${assignees.join(", ")}\n`;
             }
             
-            result += `**Created:** ${new Date(item.createdAt).toLocaleDateString()}\n`;
             result += `**Updated:** ${new Date(item.updatedAt).toLocaleDateString()}\n`;
             
             if (item.closedAt) {
@@ -656,7 +649,6 @@ export function registerGitHubTools(server: McpServer) {
             result += `- Starred Repos: ${user.starredRepositories.totalCount}\n`;
             result += `- Gists: ${user.gists.totalCount}\n`;
             
-            result += `**Member Since:** ${new Date(user.createdAt).toLocaleDateString()}\n`;
             result += `**Last Updated:** ${new Date(user.updatedAt).toLocaleDateString()}\n`;
 
             if (user.organizations.nodes.length > 0) {
@@ -853,7 +845,6 @@ export function registerGitHubTools(server: McpServer) {
         if (repo.homepageUrl) {
           result += `- **Homepage:** ${repo.homepageUrl}\n`;
         }
-        result += `- **Owner:** ${repo.owner.login} (${repo.owner.url})\n`;
         result += `- **Default Branch:** ${repo.defaultBranchRef?.name || "main"}\n`;
         
         if (repo.primaryLanguage) {
@@ -879,12 +870,7 @@ export function registerGitHubTools(server: McpServer) {
           result += `- **Security Alerts:** ${repo.vulnerability.totalCount}\n`;
         }
 
-        result += `\n**Timestamps:**\n`;
-        result += `- **Created:** ${new Date(repo.createdAt).toLocaleDateString()}\n`;
-        result += `- **Last Updated:** ${new Date(repo.updatedAt).toLocaleDateString()}\n`;
-        if (repo.pushedAt) {
-          result += `- **Last Push:** ${new Date(repo.pushedAt).toLocaleDateString()}\n`;
-        }
+        result += `\n**Last Updated:** ${new Date(repo.updatedAt).toLocaleDateString()}\n`;
 
         const features = [];
         if (repo.hasIssuesEnabled) features.push("Issues");
