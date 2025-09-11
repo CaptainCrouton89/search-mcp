@@ -12,6 +12,7 @@ import { registerGitHubTools } from "./tools/github.js";
 import { registerArxivTools } from "./tools/arxiv.js";
 import { registerOpenAlexTools } from "./tools/openalex.js";
 import { registerResearchStrategyTools } from "./tools/research-strategy.js";
+import { registerRedditTools } from "./tools/reddit.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -42,6 +43,7 @@ const toolRegistrations = {
   arxiv: registerArxivTools,
   openalex: registerOpenAlexTools,
   "research-strategy": registerResearchStrategyTools,
+  reddit: registerRedditTools,
 };
 
 // Register tools based on configuration
